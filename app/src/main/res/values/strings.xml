@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">NewCriminalIntent</string>
+
+
+    <!--범죄 상세보기-->
+    <string name="crime_title_hint">Crime Title Write</string>
+    <string name="crime_title_label">Crime Title</string>
+    <string name="crime_details_label">Crime Details</string>
+    <string name="crime_solved_label">Crime Solved</string>
+</resources>

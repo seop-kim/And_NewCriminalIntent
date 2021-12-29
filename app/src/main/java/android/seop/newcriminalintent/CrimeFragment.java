@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.text.DateFormat;
+
 public class CrimeFragment extends Fragment {
 
     private Crime mCrime;
@@ -56,9 +58,15 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        // 데이터 포맷 객체 생성
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL);
+        /**
+         * SimpleDateFormat Class 를 이용하는 방법도 있다.
+         */
+
         // 데이터 버튼
         mDateBtn = view.findViewById(R.id.crime_date);
-        mDateBtn.setText(mCrime.getDate().toString());
+        mDateBtn.setText(dateFormat.format(mCrime.getDate())); // 데이터 포맷을 이용하여 날짜 값을 생성한 객체에 맞춰 변환 이때 format은 리턴을 String으로 준다.
         mDateBtn.setEnabled(false);
 
 
@@ -69,8 +77,8 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
 
-                String snakMsg = "범죄 해결 여부 : " + isChecked;
-                Snackbar.make(view, snakMsg, Snackbar.LENGTH_SHORT).show();
+                String snaCkMsg = "범죄 해결 여부 : " + isChecked;
+                Snackbar.make(view, snaCkMsg, Snackbar.LENGTH_SHORT).show();
             }
         });
 

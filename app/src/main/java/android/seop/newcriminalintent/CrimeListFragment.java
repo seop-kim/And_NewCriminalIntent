@@ -1,5 +1,6 @@
 package android.seop.newcriminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,15 +29,16 @@ public class CrimeListFragment extends Fragment {
     private CrimeAdapter mAdapter;
     private View view;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_crime_list, container, false);
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mCrimeRecyclerView.setHasFixedSize(true); // 리사이클러뷰 최적화
 
         updateUI(); // UI 업데이트
-
         return view;
     }
 
@@ -44,7 +47,6 @@ public class CrimeListFragment extends Fragment {
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private CheckBox mSolvedCheckBox;
-
         private Crime mCrime;
 
         public CrimeHolder(@NonNull View itemView) {
@@ -55,26 +57,39 @@ public class CrimeListFragment extends Fragment {
             mDateTextView = (TextView) itemView.findViewById(R.id.list_item_crime_date_text_view);
             mSolvedCheckBox = (CheckBox) itemView.findViewById(R.id.list_item_crime_solved_check_box);
 
+            mSolvedCheckBox.setOnClickListener(this);
+
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = CrimeActivity.newIntent(getContext(), mCrime.getId());
+                    startActivity(intent);
+                }
+            });
         }
 
-        //        boolean beforeSolved = mCrime.isSolved();
-//                    mCrime.setSolved(isChecked);
-//                    Snackbar.make(view, mCrime.getTitle() + "의 범죄 현황이 변경되었습니다.", Snackbar.LENGTH_SHORT).show();
-//                    Log.i("CrimeListFragment", mCrime.getTitle() + " is Solved Change // " + beforeSolved + " > " + mCrime.isSolved());
+
         public void bindCrime(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
-
             // DateFormat 을 이용하여 날짜 값을 가독성 좋게 만들어준다.
             DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL);
             mDateTextView.setText(dateFormat.format(mCrime.getDate()));
             mSolvedCheckBox.setChecked(mCrime.isSolved());
         }
 
+
         @Override
         public void onClick(View v) {
-            Snackbar.make(view, mCrime.getTitle() + "을 선택하였습니다.", Snackbar.LENGTH_SHORT).show();
+            // 기존 범죄 해결여부 값 저장
+            boolean beforeSolved = mCrime.isSolved();
+
+            // 클릭으로 인한 해결여부가 변경됨에 따라 solved 값 변경
+            mCrime.setSolved(!mCrime.isSolved());
+            Snackbar.make(v, mCrime.getTitle() + "의 범죄 현황이 변경되었습니다.", Snackbar.LENGTH_SHORT).show();
         }
+
     }
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
@@ -105,6 +120,8 @@ public class CrimeListFragment extends Fragment {
         public int getItemCount() {
             return mCrimes.size();
         }
+
+
     }
 
     private void updateUI() {
@@ -116,7 +133,17 @@ public class CrimeListFragment extends Fragment {
         // getCrimes 는 배열 데이터를 가져오는 메소드이다.
         List<Crime> crimes = crimeLab.getCrimes();
 
-        mAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mAdapter);
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        } else {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
     }
 }

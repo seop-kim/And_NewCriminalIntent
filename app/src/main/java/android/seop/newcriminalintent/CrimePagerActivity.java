@@ -1,5 +1,7 @@
 package android.seop.newcriminalintent;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,8 +14,18 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import java.util.List;
+import java.util.UUID;
 
 public class CrimePagerActivity extends FragmentActivity {
+
+    private static final String EXTRA_CRIME_ID = "CrimePagerActivity_EXTRA_CRIME_ID";
+
+    public static Intent newIntent(Context packageContext, UUID crimeId) {
+        Intent intent = new Intent(packageContext, CrimePagerActivity.class);
+        intent.putExtra(EXTRA_CRIME_ID, crimeId);
+
+        return intent;
+    }
 
     private ViewPager2 mViewPager;
     private List<Crime> mCrimes;
@@ -23,12 +35,20 @@ public class CrimePagerActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crime_pager);
 
+        UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+
         mViewPager = findViewById(R.id.activity_crime_pager_view_pager);
 
         mCrimes = CrimeLab.get(this).getCrimes();
-        FragmentManager fragmentManager = getSupportFragmentManager();
         ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         mViewPager.setAdapter(adapter);
+
+        for (int i = 0; i < mCrimes.size(); i++) {
+            if (crimeId.equals(mCrimes.get(i).getId())) {
+                mViewPager.setCurrentItem(i);
+                break;
+            }
+        }
     }
 
     public class ViewPagerAdapter extends FragmentStateAdapter {
